@@ -1,0 +1,88 @@
+body {
+    background-color: var(--bg-main);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    overflow: hidden;
+}
+
+.splash-container {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    animation: fadeInOut 4s ease-in-out forwards;
+}
+
+.splash-logo {
+    width: 80px;
+    height: 80px;
+    background: var(--accent-color);
+    border-radius: 16px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    font-size: 40px;
+    box-shadow: 0 0 40px var(--accent-color-glow);
+    animation: floatLogo 2s ease-in-out infinite alternate;
+}
+
+.splash-text {
+    color: var(--text-primary);
+    font-size: 32px;
+    font-weight: 700;
+    letter-spacing: -1px;
+}
+
+.splash-sub {
+    color: var(--accent-color);
+    font-size: 14px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+.progress-loader {
+    width: 200px;
+    height: 4px;
+    background: var(--border-color);
+    border-radius: 2px;
+    margin-top: 20px;
+    overflow: hidden;
+    position: relative;
+}
+
+.progress-loader::after {
+    content: '';
+    position: absolute;
+    left: -100px;
+    top: 0;
+    height: 100%;
+    width: 100px;
+    background: var(--accent-color);
+    border-radius: 2px;
+    box-shadow: 0 0 10px var(--accent-color);
+    animation: loaderFill 2.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes floatLogo {
+    0% { transform: translateY(0px) scale(0.95); box-shadow: 0 0 20px var(--accent-color-glow); }
+    100% { transform: translateY(-15px) scale(1.05); box-shadow: 0 0 60px var(--accent-color-glow); }
+}
+
+@keyframes loaderFill {
+    0% { left: -100px; width: 0; }
+    50% { width: 100px; }
+    100% { left: 200px; width: 200px; }
+}
+
+@keyframes fadeInOut {
+    0% { opacity: 0; transform: scale(0.9); }
+    20% { opacity: 1; transform: scale(1); }
+    80% { opacity: 1; transform: scale(1); filter: blur(0px); }
+    100% { opacity: 0; transform: scale(1.1); filter: blur(5px); }
+}

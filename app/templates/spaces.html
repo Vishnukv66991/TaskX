@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% block title %}Spaces{% endblock %}
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='spaces.css') }}">
+{% endblock %}
+
+{% block content %}
+
+<h2>📁 Spaces</h2>
+
+<div class="spaces-grid">
+    {% if spaces %}
+        {% for space in spaces %}
+        <a href="{{ url_for('spaces.space_detail', space_id=space.id) }}" class="space-link">
+            <div class="space-card">
+                <div class="space-card-top">
+                    <h3>{{ space.name }}</h3>
+                    {% if space.type == 'public' %}
+                        <span class="space-badge public">Public</span>
+                    {% else %}
+                        <span class="space-badge private">Private</span>
+                    {% endif %}
+                </div>
+                <p class="space-description">{{ space.description or 'No description available.' }}</p>
+                <div class="space-meta">
+                    <span>Created by {{ space.created_by_name }}</span>
+                </div>
+            </div>
+        </a>
+        {% endfor %}
+    {% else %}
+        <div class="empty-state">
+            <p>No spaces found yet.</p>
+            <a href="{{ url_for('spaces.create_space') }}" class="btn-primary">Create a Space</a>
+        </div>
+    {% endif %}
+</div>
+
+{% endblock %}

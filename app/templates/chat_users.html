@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% block title %}Comms Link{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='chat.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="chat-container">
+    
+    <!-- User List Inner Sidebar -->
+    <div class="chat-sidebar">
+        <h3>Users</h3>
+        <div class="user-list">
+            {% for u in users %}
+            <a href="{{ url_for('chat.chat', user=u.id) }}" class="user-item {% if selected_user|string == u.id|string %}active{% endif %}">
+                <div class="user-avatar">{{ u.username[0] | upper }}</div>
+                <div>{{ u.username }}</div>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Active Chat Pane -->
+    <div class="chat-area">
+        {% if selected_user %}
+            <div class="chat-header">
+                Chat Active
+            </div>
+            
+            <div class="messages">
+                {% for msg in messages %}
+                    {% if msg.sender_id|string == session['user_id']|string %}
+                        <div class="msg-bubble msg-sent">
+                            {{ msg.message }}
+                            <span class="msg-time">{{ msg.created_at[:16] }}</span>
+                        </div>
+                    {% else %}
+                        <div class="msg-bubble msg-recv">
+                            {{ msg.message }}
+                            <span class="msg-time">{{ msg.created_at[:16] }}</span>
+                        </div>
+                    {% endif %}
+                {% else %}
+                    <div class="empty-chat">Select a user to start messaging.</div>
+                {% endfor %}
+            </div>
+
+            <!-- Input bar -->
+            <form action="/send-message" method="POST" class="chat-input-area">
+                <input type="hidden" name="receiver_id" value="{{ selected_user }}">
+                <input type="text" name="message" placeholder="Type a message..." required autocomplete="off">
+                <button type="submit" class="btn-primary" style="padding: 10px 24px; border-radius: 24px;">Send</button>
+            </form>
+            
+        {% else %}
+            <div class="empty-chat" style="flex-direction:column; gap:15px;">
+                <div style="font-size:40px;">💬</div>
+                Select a user to chat.
+            </div>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}

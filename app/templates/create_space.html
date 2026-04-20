@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block title %}Initialize Space{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='create_space.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="form-card">
+    <h2>📁 Create Space</h2>
+    
+    <form method="POST">
+        <label>Space Name</label>
+        <input type="text" name="name" class="glass-input" placeholder="e.g. Project Alpha" style="width:100%; margin:8px 0 20px;" required>
+
+        <label>Description</label>
+        <textarea name="description" rows="4" placeholder="Description of this space..."></textarea>
+
+        <label>Visibility</label>
+        <select name="type">
+            <option value="public">Public</option>
+            <option value="private">Private</option>
+        </select>
+
+        <button type="submit" class="btn-primary" style="width:100%;">Create Space</button>
+    </form>
+    
+    <div style="text-align:center; margin-top:20px;">
+        <a href="/spaces" style="color:var(--text-secondary); font-size:14px; text-decoration:underline;">View All Spaces</a>
+    </div>
+</div>
+{% endblock %}

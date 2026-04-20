@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard - Premium{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="dash-grid">
+    <!-- Left Main Column -->
+    <div class="left-column">
+        
+        <div class="top-cards">
+            <!-- Card 1: Total Assets Mapped to Tasks -->
+            <div class="premium-card">
+                <h3>Total Tasks <div class="badge-color">Active</div></h3>
+                <div class="big-number">{{ total }}<span class="number-decimal"></span></div>
+                <div style="color:var(--status-positive); font-size:12px; font-weight:600; margin-bottom: 20px;">
+                    ▲ +12% Output this year
+                </div>
+                
+                <div class="dist-bar">
+                    <div class="dist-fill" style="width: 65%;"></div>
+                    <div class="dist-fill-2" style="width: 25%; background: var(--bg-sidebar);"></div>
+                </div>
+
+                <div class="legend">
+                    <div><span class="legend-dot"></span><strong>Completed</strong></div>
+                    <strong>{{ completed }}</strong>
+                </div>
+                <div class="legend">
+                    <div><span class="legend-dot" style="background:var(--status-pending)"></span><strong>Pending</strong></div>
+                    <strong style="color:var(--text-primary)">{{ pending }}</strong>
+                </div>
+            </div>
+
+            <!-- Card 2: Investment Graphic Mapped to Flow -->
+            <div class="premium-card">
+                <h3>Completed Tasks <div class="badge-color">Live</div></h3>
+                <div class="big-number">{{ completed }}<span class="number-decimal"> Tasks</span></div>
+                <div style="color:var(--status-positive); font-size:12px; font-weight:600;">
+                    ▲ Performance Curve
+                </div>
+                
+                <!-- Fake Graphic mimicking the line chart -->
+                <div style="height:100px; width:100%; border-bottom: 1px dashed var(--border-color); margin-top:20px; position:relative;">
+                    <div style="position:absolute; bottom:0; padding:10px; font-size:40px; color:var(--accent-color); opacity: 0.3;">
+                        📈 ~ ~ ~ / 📉
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Task Table -->
+        <div class="task-widget">
+            <h3 style="color:var(--text-primary); font-size:16px;">Recent Tasks</h3>
+            <table>
+                <tr>
+                    <th>Task Subject</th>
+                    <th>Status</th>
+                    <th>Due Date</th>
+                    <th>Action</th>
+                </tr>
+                {% for task in tasks %}
+                <tr>
+                    <td><strong>{{ task.title }}</strong></td>
+                    <td>
+                        {% if task.status == 'completed' %}
+                            <span class="badge-color">Completed</span>
+                        {% else %}
+                            <span class="badge-color" style="background:rgba(245, 158, 11, 0.1); color:var(--status-pending); border-color:var(--status-pending);">Pending</span>
+                        {% endif %}
+                    </td>
+                    <td style="color:var(--text-secondary);">{{ task.due_date }}</td>
+                    <td><button class="btn-outline" style="padding:4px 8px; font-size:12px;">View</button></td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="4" style="text-align:center; color:var(--text-secondary); padding: 30px;">System is awaiting your first task entry.</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+
+    </div>
+
+    <!-- Right Side CTA Array -->
+    <div>
+        <div class="cta-card">
+            <div class="cta-robot">
+                🤖
+            </div>
+            <div class="cta-title">Upgrade Features</div>
+            <div class="cta-desc">
+                Get automated management, real-time insights, and personalized advice.
+            </div>
+            <button class="btn-primary" style="width:100%; position:relative; z-index:1;">Try Now</button>
+        </div>
+    </div>
+</div>
+{% endblock %}

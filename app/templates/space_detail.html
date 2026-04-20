@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% block title %}{{ space.name }}{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='spaces.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="space-detail-header">
+    <div>
+        <h2>📁 {{ space.name }}</h2>
+        <p>{{ space.description or 'No description available for this space.' }}</p>
+        <div class="space-meta">
+            <span>Created by {{ space.created_by_name }}</span>
+            <span>Visibility: {{ space.type|capitalize }}</span>
+        </div>
+    </div>
+</div>
+
+<div class="task-form">
+    <h3>Create New Task</h3>
+    <form method="POST" enctype="multipart/form-data">
+        <label>Task Name</label>
+        <input type="text" name="task_name" placeholder="Enter task title" required>
+
+        <label>Task Description</label>
+        <textarea name="task_description" rows="3" placeholder="Short task summary" required></textarea>
+
+        <label>Task Details</label>
+        <textarea name="task_details" rows="4" placeholder="More detailed information about the task"></textarea>
+
+        <label>Attachment (image or pdf)</label>
+        <input type="file" name="attachment" accept="image/*,application/pdf">
+
+        <label>Assign To</label>
+        <select name="assigned_to">
+            <option value="">Unassigned</option>
+            {% for user in users %}
+                <option value="{{ user.id }}">{{ user.username }}</option>
+            {% endfor %}
+        </select>
+
+        <label>Status</label>
+        <select name="status" required>
+            <option value="pending">Pending</option>
+            <option value="in progress">In Progress</option>
+            <option value="complete">Complete</option>
+            <option value="hold">Hold</option>
+        </select>
+
+        <button type="submit">Add Task</button>
+    </form>
+</div>
+
+<div class="tasks-list">
+    <h3>Tasks</h3>
+    {% if tasks %}
+        {% for task in tasks %}
+            <div class="task-card">
+                <div class="space-card-top">
+                    <h4>{{ task.task_name }}</h4>
+                    <span class="status-badge {{ task.status | replace(' ', '') }}">{{ task.status | title }}</span>
+                </div>
+                <div class="task-meta">
+                    <span>Assigned to: {{ task.assigned_name }}</span>
+                </div>
+                <p>{{ task.task_description | replace('\n', '<br>') | safe }}</p>
+                {% if task.attachment %}
+                    <a class="file-link" href="{{ url_for('static', filename=task.attachment) }}" target="_blank">View attachment</a>
+                {% endif %}
+            </div>
+        {% endfor %}
+    {% else %}
+        <div class="empty-state">
+            <p>No tasks have been added to this space yet.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

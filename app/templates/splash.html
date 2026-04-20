@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaskX - Initializing System...</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='global.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='splash.css') }}">
+    
+    <script>
+        // Redirect to signup page after 3.8 seconds matching animation completion
+        setTimeout(function() {
+            window.location.href = "/signup";
+        }, 3800);
+    </script>
+</head>
+<body class="light-mode">
+    
+    <div class="splash-container">
+        <div class="splash-logo">▲</div>
+        <div class="splash-text">System Init</div>
+        <div class="splash-sub">Booting Environments</div>
+        
+        <div class="progress-loader"></div>
+    </div>
+
+    <!-- Theme init before redirect so it matches global preference -->
+    <script src="{{ url_for('static', filename='theme.js') }}"></script>
+</body>
+</html>

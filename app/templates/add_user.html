@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block title %}Add User{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='add_user.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="form-card">
+    <h2>➕ Add User</h2>
+    
+    <form method="POST">
+        <label>Username</label>
+        <input type="text" name="username" class="glass-input" placeholder="Enter username" style="width:100%; margin:8px 0 20px;" required>
+
+        <label>Email Address</label>
+        <input type="email" name="email" class="glass-input" placeholder="Enter email address" style="width:100%; margin:8px 0 20px;" required>
+
+        <label>Password</label>
+        <input type="password" name="password" class="glass-input" placeholder="Create password" style="width:100%; margin:8px 0 20px;" required>
+
+        <label>User Role</label>
+        <select name="role" class="glass-input" style="width:100%; margin:8px 0 20px;" required>
+            <option value="member">Member</option>
+            <option value="team lead">Team Lead</option>
+            <option value="manager">Manager</option>
+            <option value="admin">Admin</option>
+        </select>
+
+        <button type="submit" class="btn-primary" style="width:100%;">Create User</button>
+    </form>
+    
+    <div style="text-align:center; margin-top:20px;">
+        <a href="/users" style="color:var(--text-secondary); font-size:14px; text-decoration:underline;">Return to Users List</a>
+    </div>
+</div>
+{% endblock %}

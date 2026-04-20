@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% block title %}Edit User Form{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='add_user.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="form-card">
+    <h2>✏️ Edit User</h2>
+    
+    <form method="POST">
+        <label>Username</label>
+        <input type="text" name="username" class="glass-input" value="{{ user.username }}" style="width:100%; margin:8px 0 20px;" required>
+
+        <label>Email Address</label>
+        <input type="email" name="email" class="glass-input" value="{{ user.email }}" style="width:100%; margin:8px 0 20px;" required>
+
+        <label>User Role</label>
+        <select name="role" class="glass-input" style="width:100%; margin:8px 0 20px;" required>
+            <option value="member" {% if user.role == 'member' %}selected{% endif %}>Member</option>
+            <option value="team lead" {% if user.role == 'team lead' %}selected{% endif %}>Team Lead</option>
+            <option value="manager" {% if user.role == 'manager' %}selected{% endif %}>Manager</option>
+            <option value="admin" {% if user.role == 'admin' %}selected{% endif %}>Admin</option>
+        </select>
+
+        <button type="submit" class="btn-primary" style="width:100%;">Save Changes</button>
+    </form>
+    
+    <div style="text-align:center; margin-top:20px;">
+        <a href="/users" style="color:var(--text-secondary); font-size:14px; text-decoration:underline;">Cancel</a>
+    </div>
+</div>
+{% endblock %}

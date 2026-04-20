@@ -1,0 +1,178 @@
+.spaces-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 18px;
+}
+
+.space-link {
+    text-decoration: none;
+}
+
+.space-card {
+    background: #1e293b;
+    padding: 20px;
+    border-radius: 16px;
+    border: 1px solid rgba(148, 163, 184, 0.15);
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.space-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 16px 35px rgba(15, 23, 42, 0.22);
+}
+
+.space-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.space-badge {
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.space-badge.public {
+    background: rgba(34, 197, 94, 0.16);
+    color: #86efac;
+}
+
+.space-badge.private {
+    background: rgba(248, 113, 113, 0.16);
+    color: #fca5a5;
+}
+
+.space-description {
+    color: var(--text-secondary);
+    margin-bottom: 18px;
+    min-height: 56px;
+}
+
+.space-meta {
+    color: var(--text-secondary);
+    font-size: 13px;
+}
+
+.empty-state {
+    grid-column: 1 / -1;
+    background: #111827;
+    border: 1px dashed rgba(148, 163, 184, 0.35);
+    border-radius: 14px;
+    padding: 28px;
+    text-align: center;
+}
+
+.empty-state p {
+    margin-bottom: 18px;
+    color: var(--text-secondary);
+}
+
+.task-form {
+    background: #111827;
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 24px;
+}
+
+.task-form input,
+.task-form textarea,
+.task-form select {
+    width: 100%;
+    margin: 8px 0;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(148, 163, 184, 0.15);
+    background: #0f172a;
+    color: var(--text-primary);
+}
+
+.task-form button {
+    background: #3b82f6;
+    color: white;
+    padding: 12px;
+    width: 100%;
+    border: none;
+    border-radius: 8px;
+    margin-top: 12px;
+    cursor: pointer;
+}
+
+.task-card {
+    background: #0f172a;
+    padding: 18px;
+    margin-bottom: 14px;
+    border-radius: 12px;
+    border: 1px solid #334155;
+}
+
+.task-card h4 {
+    margin-top: 0;
+    margin-bottom: 10px;
+}
+
+.task-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-bottom: 12px;
+}
+
+.status-badge {
+    padding: 5px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-badge.pending { background: #fbbf24; color: #1f2937; }
+.status-badge.inprogress { background: #60a5fa; color: #0f172a; }
+.status-badge.complete { background: #22c55e; color: #0f172a; }
+.status-badge.hold { background: #f472b6; color: #0f172a; }
+
+.file-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: #93c5fd;
+    text-decoration: none;
+    font-size: 14px;
+}
+
+.file-link:hover {
+    text-decoration: underline;
+}
+
+.task-form input,
+.task-form textarea,
+.task-form select {
+    width: 100%;
+    margin: 8px 0;
+    padding: 10px;
+    border-radius: 6px;
+    border: none;
+}
+
+.task-form button {
+    background: #3b82f6;
+    color: white;
+    padding: 10px;
+    width: 100%;
+    border: none;
+    border-radius: 6px;
+}
+
+.task-card {
+    background: #0f172a;
+    padding: 15px;
+    margin-bottom: 10px;
+    border-radius: 10px;
+    border: 1px solid #334155;
+}

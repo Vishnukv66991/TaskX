@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% block title %}Global Roster{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='users.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="table-wrapper">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+        <h2>Users</h2>
+        <a href="/add-user" class="btn-primary" style="font-size:13px;">+ Add User</a>
+    </div>
+
+    <table>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Actions</th>
+        </tr>
+
+        {% for user in users %}
+        <tr>
+            <td style="color:var(--text-secondary);">#{{ user.id }}</td>
+            <td><strong>{{ user.username }}</strong></td>
+            <td style="color:var(--text-secondary);">{{ user.email }}</td>
+            <td>
+                {% if user.role == 'admin' %}
+                    <span class="badge-color">ADMIN</span>
+                {% elif user.role == 'manager' %}
+                    <span class="badge-color" style="background:#ff6b35; color:white;">MANAGER</span>
+                {% elif user.role == 'team lead' %}
+                    <span class="badge-color" style="background:#4ecdc4; color:white;">TEAM LEAD</span>
+                {% else %}
+                    <span class="badge-color" style="background:var(--bg-main); color:var(--text-primary); border-color:var(--border-color);">{{ user.role | upper }}</span>
+                {% endif %}
+            </td>
+            <td>
+                <a href="/edit-user/{{ user.id }}" class="action-link">Edit</a>
+                <form action="/delete-user/{{ user.id }}" method="POST" style="display:inline;">
+                    <button type="submit" class="action-link delete-btn" onclick="return confirm('Delete this user completely?');">Delete</button>
+                </form>
+            </td>
+        </tr>
+        {% else %}
+        <tr>
+            <td colspan="5" style="text-align:center; padding:30px; color:var(--text-secondary);">No users found.</td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+{% endblock %}

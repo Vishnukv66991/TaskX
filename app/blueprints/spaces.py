@@ -78,7 +78,7 @@ def list_spaces():
 @login_required
 def space_detail(space_id):
 
-    # CREATE TASK
+    # CREATE TASK OR SUBTASK
     if request.method == 'POST':
         task_name = request.form.get('task_name')
         task_description = request.form.get('task_description')
@@ -86,6 +86,7 @@ def space_detail(space_id):
         attachment_file = request.files.get('attachment')
         assigned_to = request.form.get('assigned_to')
         status = request.form.get('status') or 'pending'
+        parent_task_id = request.form.get('parent_task_id')  # For subtasks
 
         if not task_name or not task_description:
             flash("Task name and description are required.", "danger")
@@ -112,16 +113,23 @@ def space_detail(space_id):
             description_full += '\n\nDetails:\n' + task_details.strip()
 
         try:
-            supabase.table("tasks").insert({
+            task_data = {
                 "space_id": space_id,
                 "task_name": task_name,
                 "task_description": description_full,
                 "attachment": attachment_path,
                 "assigned_to": assigned_to,
                 "status": status
-            }).execute()
-
-            flash("Task created successfully!", "success")
+            }
+            
+            # If parent_task_id is provided, create as subtask
+            if parent_task_id:
+                task_data["parent_task_id"] = int(parent_task_id)
+                flash("Subtask created successfully!", "success")
+            else:
+                flash("Task created successfully!", "success")
+            
+            supabase.table("tasks").insert(task_data).execute()
 
         except Exception as e:
             print(f"Error creating task: {e}")
@@ -134,13 +142,13 @@ def space_detail(space_id):
         space_res = supabase.table("spaces").select("*").eq("id", space_id).single().execute()
         space = space_res.data
 
-        # TASKS
+        # TASKS - Get all tasks including subtasks
         task_res = supabase.table("tasks") \
             .select("*") \
             .eq("space_id", space_id) \
             .order("id", desc=True) \
             .execute()
-        tasks = task_res.data if task_res.data else []
+        all_tasks = task_res.data if task_res.data else []
 
         # USERS (for dropdown + mapping)
         user_res = supabase.table("users").select("id, username").execute()
@@ -149,14 +157,29 @@ def space_detail(space_id):
     except Exception as e:
         print(f"Error fetching space data: {e}")
         space = {"name": "Unknown Space", "description": ""}
-        tasks = []
+        all_tasks = []
         users = []
         flash("Error loading space details or tasks table may be missing.", "danger")
 
     user_map = {u["id"]: u["username"] for u in users}
 
-    for t in tasks:
+    # Organize tasks and subtasks
+    tasks = []
+    for t in all_tasks:
         t["assigned_name"] = user_map.get(t.get("assigned_to"), "Unassigned")
+        
+        # Only add main tasks (no parent_task_id)
+        if not t.get("parent_task_id"):
+            t["subtasks"] = []
+            tasks.append(t)
+    
+    # Attach subtasks to their parent tasks
+    for t in all_tasks:
+        if t.get("parent_task_id"):
+            for parent in tasks:
+                if parent["id"] == t.get("parent_task_id"):
+                    parent["subtasks"].append(t)
+                    break
 
     return render_template(
         "space_detail.html",

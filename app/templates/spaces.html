@@ -1,12 +1,56 @@
 {% extends 'base.html' %}
-{% block title %}Spaces{% endblock %}
+{% block title %}Spaces - TaskX{% endblock %}
 {% block head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='spaces.css') }}">
+<style>
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 28px;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+    .page-header h2 {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 28px;
+        font-weight: 700;
+    }
+    .page-actions {
+        display: flex;
+        gap: 12px;
+    }
+    .btn-create {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: var(--accent-color);
+        color: white;
+        padding: 12px 20px;
+        border-radius: 10px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.2s;
+    }
+    .btn-create:hover {
+        background: var(--accent-color-hover);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px var(--accent-color-glow);
+    }
+</style>
 {% endblock %}
 
 {% block content %}
-
-<h2>📁 Spaces</h2>
+<div class="page-header">
+    <h2><i data-lucide="folder-kanban" class="icon-lg"></i> Spaces</h2>
+    <div class="page-actions">
+        <a href="{{ url_for('spaces.create_space') }}" class="btn-create">
+            <i data-lucide="plus-circle"></i> Create Space
+        </a>
+    </div>
+</div>
 
 <div class="spaces-grid">
     {% if spaces %}
@@ -14,26 +58,36 @@
         <a href="{{ url_for('spaces.space_detail', space_id=space.id) }}" class="space-link">
             <div class="space-card">
                 <div class="space-card-top">
-                    <h3>{{ space.name }}</h3>
-                    {% if space.type == 'public' %}
-                        <span class="space-badge public">Public</span>
-                    {% else %}
-                        <span class="space-badge private">Private</span>
-                    {% endif %}
+                    <div class="space-icon {{ space.type }}">
+                        <i data-lucide="{% if space.type == 'public' %}globe{% else %}lock{% endif %}"></i>
+                    </div>
+                    <span class="space-badge {{ space.type }}">{{ space.type }}</span>
                 </div>
+                <h3>{{ space.name }}</h3>
                 <p class="space-description">{{ space.description or 'No description available.' }}</p>
                 <div class="space-meta">
-                    <span>Created by {{ space.created_by_name }}</span>
+                    <span><i data-lucide="user"></i> {{ space.created_by_name }}</span>
+                    <span><i data-lucide="calendar"></i> {{ space.created_at[:10] if space.created_at else 'N/A' }}</span>
+                </div>
+                <div class="space-card-footer">
+                    <span class="view-btn">Open Space <i data-lucide="arrow-right"></i></span>
                 </div>
             </div>
         </a>
         {% endfor %}
     {% else %}
         <div class="empty-state">
-            <p>No spaces found yet.</p>
-            <a href="{{ url_for('spaces.create_space') }}" class="btn-primary">Create a Space</a>
+            <i data-lucide="folder-open" class="icon-empty"></i>
+            <p>No spaces found</p>
+            <small>Create a space to organize your team's tasks</small>
+            <a href="{{ url_for('spaces.create_space') }}" class="btn-create">
+                <i data-lucide="plus-circle"></i> Create Space
+            </a>
         </div>
     {% endif %}
 </div>
 
+<script>
+if(typeof lucide !== 'undefined') lucide.createIcons();
+</script>
 {% endblock %}

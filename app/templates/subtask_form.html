@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% block title %}Create Subtask{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='spaces.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="task-form">
+    <h3>Create New Subtask</h3>
+
+    <p style="margin-bottom: 16px; color: var(--text-secondary);">
+        Parent Task: <strong>{{ parent_task.task_name }}</strong>
+    </p>
+
+    <!-- 🔥 FIXED: action changed to subtask blueprint -->
+    <form method="POST" action="{{ url_for('subtask.create_subtask') }}" enctype="multipart/form-data">
+
+        <!-- 🔗 Important for linking -->
+        <input type="hidden" name="parent_id" value="{{ parent_task.id }}">
+
+        <!-- Task Name -->
+        <label>Task Name</label>
+        <input type="text" name="task_name" placeholder="Enter task title" required>
+
+        <!-- Description -->
+        <label>Task Description</label>
+        <textarea name="task_description" rows="3" placeholder="Short task summary" required></textarea>
+
+        <!-- Details -->
+        <label>Task Details</label>
+        <textarea name="task_details" rows="4" placeholder="More detailed information"></textarea>
+
+        <!-- Attachment -->
+        <label>Attachment (image or pdf)</label>
+        <input type="file" name="attachment" accept="image/*,application/pdf">
+
+        <!-- Assign User -->
+        <label>Assign To</label>
+        <select name="assigned_to">
+            <option value="">Unassigned</option>
+            {% for user in users %}
+            <option value="{{ user.id }}">{{ user.username }}</option>
+            {% endfor %}
+        </select>
+
+        <!-- Status -->
+        <label>Status</label>
+        <select name="status" required>
+            <option value="pending">Pending</option>
+            <option value="in progress">In Progress</option>
+            <option value="completed">Completed</option>
+            <option value="hold">Hold</option>
+        </select>
+
+        <!-- Buttons -->
+        <div style="margin-top: 15px;">
+            <button type="submit">Add Subtask</button>
+            <a href="{{ url_for('tasks.tasks_page') }}" class="btn-cancel">Cancel</a>
+        </div>
+
+    </form>
+</div>
+{% endblock %}

@@ -14,6 +14,7 @@
     
     --btn-bg: #272833;
     --btn-hover: #353644;
+    --bg-hover: #1f2330;
     
     --status-positive: #10B981;
     --status-negative: #EF4444;
@@ -35,6 +36,7 @@ body.light-mode {
     
     --btn-bg: #F1F5F9;
     --btn-hover: #E2E8F0;
+    --bg-hover: #EEF2F7;
 }
 
 * {
@@ -117,4 +119,166 @@ a {
 .glass-input:focus {
     border-color: var(--accent-color);
     box-shadow: 0 0 0 2px var(--accent-color-glow);
+}
+
+.top-btn {
+    color: var(--text-primary);
+}
+/* ===== TOPBAR FIX ===== */
+.app-topbar {
+    padding: 12px 20px;
+}
+
+
+.top-search {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+/* Remove the old emoji content and draw a magnifying glass */
+.top-search::before {
+    content: "";
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    
+    /* The glass circle */
+    width: 12px;
+    height: 12px;
+    border: 2px solid #9ca3af;
+    border-radius: 50%;
+    z-index: 2;
+}
+
+/* The handle of the magnifying glass */
+.top-search::after {
+    content: "";
+    position: absolute;
+    left: 21px;
+    top: 58%;
+    width: 6px;
+    height: 2px;
+    background: #9ca3af;
+    transform: rotate(45deg);
+    border-radius: 2px;
+    z-index: 2;
+}
+
+.top-search input {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    padding: 8px 14px 8px 36px; /* Adjusted padding for the new icon */
+    border-radius: 20px;
+    outline: none;
+    width: 100%;
+}
+/* ===== UPGRADE CARD (Sidebar/Bottom CTA) ===== */
+.upgrade-card {
+    background: linear-gradient(135deg, #0646ad26 0%, rgba(80, 108, 169, 0.05) 100%);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    border-radius: 20px;
+    padding: 24px;
+    text-align: center;
+    margin: 20px;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Subtle glow effect behind the card */
+.upgrade-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(3, 5, 9, 0.1) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+.upgrade-card h4 {
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin-bottom: 6px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.upgrade-card p {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-bottom: 20px;
+    font-weight: 500;
+}
+
+/* Logout Link styled as a Button */
+.upgrade-card a {
+    display: block;
+    background: #3b82f68c;
+    color: #ffffff;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 10px;
+    border-radius: 12px;
+    border: 1px solid rgba(4, 58, 253, 0.1);
+    transition: all 0.3s ease;
+}
+
+.upgrade-card a:hover {
+    background: #0a152d;
+    color: #fca5a5;
+    border-color: rgba(239, 68, 68, 0.2);
+    transform: translateY(-2px);
+}
+
+/* Optional: If you want the "Upgrade" title to have a sapphire glow */
+.upgrade-card h4 {
+    text-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
+}
+#theme-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    text-shadow: none !important; /* Removes color ghosting */
+    filter: none !important;      /* Removes blur/glow */
+}
+
+.flash-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.flash-item {
+    border-radius: 10px;
+    padding: 10px 12px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-surface);
+    color: var(--text-primary);
+    font-size: 14px;
+}
+
+.flash-success {
+    border-color: rgba(16, 185, 129, 0.5);
+    background: rgba(16, 185, 129, 0.12);
+}
+
+.flash-danger,
+.flash-error {
+    border-color: rgba(239, 68, 68, 0.5);
+    background: rgba(239, 68, 68, 0.12);
+}
+
+.flash-warning {
+    border-color: rgba(245, 158, 11, 0.5);
+    background: rgba(245, 158, 11, 0.12);
 }

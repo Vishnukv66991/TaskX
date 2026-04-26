@@ -58,6 +58,8 @@ def login():
             if user and check_password_hash(user[0]['password'], password):
                 session['user_id'] = user[0]['id']
                 session['username'] = user[0]['username']
+                session['email'] = user[0]['email']
+                session['role'] = user[0].get('role', 'member')
                 flash("Login successful!", "success")
                 return redirect(url_for('main.dashboard'))
             else:
@@ -74,3 +76,40 @@ def logout():
     session.clear()
     flash("You have been logged out.", "info")
     return redirect(url_for('auth.login'))
+
+@auth_bp.route('/profile/update', methods=['POST'])
+def profile_update():
+    if 'user_id' not in session:
+        flash("Please login first.", "danger")
+        return redirect(url_for('auth.login'))
+    
+    username = request.form.get('username', '').strip()
+    email = request.form.get('email', '').strip()
+    password = request.form.get('password', '').strip()
+    
+    if not username or not email:
+        flash("Username and email are required.", "danger")
+        return redirect(url_for('main.dashboard'))
+    
+    user_id = session['user_id']
+    
+    try:
+        update_data = {
+            "username": username,
+            "email": email
+        }
+        
+        if password:
+            update_data["password"] = generate_password_hash(password)
+        
+        supabase.table("users").update(update_data).eq("id", user_id).execute()
+        
+        session['username'] = username
+        session['email'] = email
+        
+        flash("Profile updated successfully!", "success")
+    except Exception as e:
+        print("Profile update error:", e)
+        flash("Failed to update profile.", "danger")
+    
+    return redirect(url_for('main.dashboard'))

@@ -1,101 +1,130 @@
 {% extends 'base.html' %}
-{% block title %}Dashboard - Premium{% endblock %}
+{% block title %}Dashboard - TaskX{% endblock %}
 
 {% block head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
+<style>
+    .dash-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 28px;
+    }
+    .dash-header h2 {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 28px;
+        font-weight: 700;
+    }
+    .header-icon {
+        width: 32px;
+        height: 32px;
+    }
+</style>
 {% endblock %}
 
 {% block content %}
+<div class="dash-header">
+    <h2><i data-lucide="layout-dashboard" class="header-icon"></i> Dashboard</h2>
+</div>
+
 <div class="dash-grid">
-    <!-- Left Main Column -->
-    <div class="left-column">
-        
-        <div class="top-cards">
-            <!-- Card 1: Total Assets Mapped to Tasks -->
-            <div class="premium-card">
-                <h3>Total Tasks <div class="badge-color">Active</div></h3>
-                <div class="big-number">{{ total }}<span class="number-decimal"></span></div>
-                <div style="color:var(--status-positive); font-size:12px; font-weight:600; margin-bottom: 20px;">
-                    ▲ +12% Output this year
-                </div>
-                
-                <div class="dist-bar">
-                    <div class="dist-fill" style="width: 65%;"></div>
-                    <div class="dist-fill-2" style="width: 25%; background: var(--bg-sidebar);"></div>
-                </div>
+    <section class="metrics-grid">
+        <article class="metric-card">
+            <div class="metric-icon total"><i data-lucide="check-square"></i></div>
+            <h3>Total Tasks</h3>
+            <strong>{{ total }}</strong>
+        </article>
+        <article class="metric-card">
+            <div class="metric-icon complete"><i data-lucide="check-circle"></i></div>
+            <h3>Completed</h3>
+            <strong>{{ completed }}</strong>
+        </article>
+        <article class="metric-card">
+            <div class="metric-icon pending"><i data-lucide="clock"></i></div>
+            <h3>Pending</h3>
+            <strong>{{ pending }}</strong>
+        </article>
+    </section>
 
-                <div class="legend">
-                    <div><span class="legend-dot"></span><strong>Completed</strong></div>
-                    <strong>{{ completed }}</strong>
+    <div class="charts-row">
+        <section class="chart-card">
+            <h3><i data-lucide="pie-chart"></i> {{ "Team Progress" if is_admin else "My Progress" }}</h3>
+            {% set total_safe = total if total > 0 else 1 %}
+            <div class="bar-group">
+                <div class="bar-header">
+                    <label><i data-lucide="check-circle"></i> Completed</label>
+                    <span>{{ (completed / total_safe * 100)|round(0) }}%</span>
                 </div>
-                <div class="legend">
-                    <div><span class="legend-dot" style="background:var(--status-pending)"></span><strong>Pending</strong></div>
-                    <strong style="color:var(--text-primary)">{{ pending }}</strong>
+                <div class="bar-track">
+                    <div class="bar-fill complete" style="width: {{ (completed / total_safe * 100)|round(0) }}%;"></div>
                 </div>
             </div>
-
-            <!-- Card 2: Investment Graphic Mapped to Flow -->
-            <div class="premium-card">
-                <h3>Completed Tasks <div class="badge-color">Live</div></h3>
-                <div class="big-number">{{ completed }}<span class="number-decimal"> Tasks</span></div>
-                <div style="color:var(--status-positive); font-size:12px; font-weight:600;">
-                    ▲ Performance Curve
+            <div class="bar-group">
+                <div class="bar-header">
+                    <label><i data-lucide="clock"></i> Pending</label>
+                    <span>{{ (pending / total_safe * 100)|round(0) }}%</span>
                 </div>
-                
-                <!-- Fake Graphic mimicking the line chart -->
-                <div style="height:100px; width:100%; border-bottom: 1px dashed var(--border-color); margin-top:20px; position:relative;">
-                    <div style="position:absolute; bottom:0; padding:10px; font-size:40px; color:var(--accent-color); opacity: 0.3;">
-                        📈 ~ ~ ~ / 📉
-                    </div>
+                <div class="bar-track">
+                    <div class="bar-fill pending" style="width: {{ (pending / total_safe * 100)|round(0) }}%;"></div>
                 </div>
             </div>
+        </section>
+
+        {% if is_admin and assignee_counts %}
+        <section class="chart-card">
+            <h3><i data-lucide="users"></i> Tasks By Assignee</h3>
+            {% for name, count in assignee_counts.items() %}
+            <div class="bar-group">
+                <div class="bar-header">
+                    <label><i data-lucide="user"></i> {{ name }}</label>
+                    <span>{{ count }}</span>
+                </div>
+                <div class="bar-track">
+                    <div class="bar-fill assignee" style="width: {{ (count / total_safe * 100)|round(0) }}%;"></div>
+                </div>
+            </div>
+            {% endfor %}
+        </section>
+        {% endif %}
+    </div>
+
+    <section class="task-table-card">
+        <div class="table-header">
+            <h3><i data-lucide="list"></i> {{ "All Recent Tasks" if is_admin else "My Assigned Tasks" }}</h3>
+            <span class="task-count">{{ tasks|length }}</span>
         </div>
-
-        <!-- Task Table -->
-        <div class="task-widget">
-            <h3 style="color:var(--text-primary); font-size:16px;">Recent Tasks</h3>
-            <table>
+        <table>
+            <thead>
                 <tr>
-                    <th>Task Subject</th>
+                    <th>Task</th>
                     <th>Status</th>
-                    <th>Due Date</th>
-                    <th>Action</th>
+                    <th>Assigned</th>
+                    <th>Created</th>
                 </tr>
+            </thead>
+            <tbody>
                 {% for task in tasks %}
                 <tr>
-                    <td><strong>{{ task.title }}</strong></td>
-                    <td>
-                        {% if task.status == 'completed' %}
-                            <span class="badge-color">Completed</span>
-                        {% else %}
-                            <span class="badge-color" style="background:rgba(245, 158, 11, 0.1); color:var(--status-pending); border-color:var(--status-pending);">Pending</span>
-                        {% endif %}
-                    </td>
-                    <td style="color:var(--text-secondary);">{{ task.due_date }}</td>
-                    <td><button class="btn-outline" style="padding:4px 8px; font-size:12px;">View</button></td>
+                    <td class="task-name">{{ task.task_name }}</td>
+                    <td><span class="status-chip status-{{ (task.status or 'pending')|lower|replace(' ', '-') }}">{{ task.status or "pending" }}</span></td>
+                    <td><span class="assignee-name"><i data-lucide="user"></i> {{ task.assigned_name }}</span></td>
+                    <td class="date-cell">{{ task.created_at[:10] if task.created_at else "N/A" }}</td>
                 </tr>
                 {% else %}
                 <tr>
-                    <td colspan="4" style="text-align:center; color:var(--text-secondary); padding: 30px;">System is awaiting your first task entry.</td>
+                    <td colspan="4" class="empty-row">
+                        <i data-lucide="inbox"></i> No tasks found
+                    </td>
                 </tr>
                 {% endfor %}
-            </table>
-        </div>
-
-    </div>
-
-    <!-- Right Side CTA Array -->
-    <div>
-        <div class="cta-card">
-            <div class="cta-robot">
-                🤖
-            </div>
-            <div class="cta-title">Upgrade Features</div>
-            <div class="cta-desc">
-                Get automated management, real-time insights, and personalized advice.
-            </div>
-            <button class="btn-primary" style="width:100%; position:relative; z-index:1;">Try Now</button>
-        </div>
-    </div>
+            </tbody>
+        </table>
+    </section>
 </div>
+
+<script>
+if(typeof lucide !== 'undefined') lucide.createIcons();
+</script>
 {% endblock %}

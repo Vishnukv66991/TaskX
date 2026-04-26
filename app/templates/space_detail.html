@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% block title %}{{ space.name }}{% endblock %}
+{% block title %}{{ space.name }} - TaskX{% endblock %}
 
 {% block head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='spaces.css') }}">
@@ -7,73 +7,120 @@
 
 {% block content %}
 <div class="space-detail-header">
-    <div>
-        <h2>📁 {{ space.name }}</h2>
+    <div class="space-header-content">
+        <a href="{{ url_for('spaces.list_spaces') }}" class="back-link">
+            <i data-lucide="arrow-left"></i> Back to Spaces
+        </a>
+        <h2><i data-lucide="folder-kanban"></i> {{ space.name }}</h2>
         <p>{{ space.description or 'No description available for this space.' }}</p>
         <div class="space-meta">
-            <span>Created by {{ space.created_by_name }}</span>
-            <span>Visibility: {{ space.type|capitalize }}</span>
+            <span><i data-lucide="user"></i> {{ space.created_by_name }}</span>
+            <span class="space-badge {{ space.type }}">{{ space.type }}</span>
         </div>
     </div>
 </div>
 
-<div class="task-form">
-    <h3>Create New Task</h3>
-    <form method="POST" enctype="multipart/form-data">
-        <label>Task Name</label>
-        <input type="text" name="task_name" placeholder="Enter task title" required>
-
-        <label>Task Description</label>
-        <textarea name="task_description" rows="3" placeholder="Short task summary" required></textarea>
-
-        <label>Task Details</label>
-        <textarea name="task_details" rows="4" placeholder="More detailed information about the task"></textarea>
-
-        <label>Attachment (image or pdf)</label>
-        <input type="file" name="attachment" accept="image/*,application/pdf">
-
-        <label>Assign To</label>
-        <select name="assigned_to">
-            <option value="">Unassigned</option>
-            {% for user in users %}
-                <option value="{{ user.id }}">{{ user.username }}</option>
-            {% endfor %}
-        </select>
-
-        <label>Status</label>
-        <select name="status" required>
-            <option value="pending">Pending</option>
-            <option value="in progress">In Progress</option>
-            <option value="complete">Complete</option>
-            <option value="hold">Hold</option>
-        </select>
-
-        <button type="submit">Add Task</button>
-    </form>
-</div>
-
-<div class="tasks-list">
-    <h3>Tasks</h3>
-    {% if tasks %}
-        {% for task in tasks %}
-            <div class="task-card">
-                <div class="space-card-top">
-                    <h4>{{ task.task_name }}</h4>
-                    <span class="status-badge {{ task.status | replace(' ', '') }}">{{ task.status | title }}</span>
-                </div>
-                <div class="task-meta">
-                    <span>Assigned to: {{ task.assigned_name }}</span>
-                </div>
-                <p>{{ task.task_description | replace('\n', '<br>') | safe }}</p>
-                {% if task.attachment %}
-                    <a class="file-link" href="{{ url_for('static', filename=task.attachment) }}" target="_blank">View attachment</a>
-                {% endif %}
-            </div>
-        {% endfor %}
-    {% else %}
-        <div class="empty-state">
-            <p>No tasks have been added to this space yet.</p>
+<div class="space-detail-grid">
+    <div class="task-form">
+        <div class="form-header">
+            <i data-lucide="plus-circle"></i>
+            <h3>Create New Task</h3>
         </div>
-    {% endif %}
+        <form method="POST" enctype="multipart/form-data">
+            <label><i data-lucide="type"></i> Task Name</label>
+            <input type="text" name="task_name" placeholder="Enter task title" required>
+
+            <label><i data-lucide="align-left"></i> Description</label>
+            <textarea name="task_description" rows="3" placeholder="Short task summary" required></textarea>
+
+            <label><i data-lucide="file-text"></i> Details</label>
+            <textarea name="task_details" rows="4" placeholder="More detailed information"></textarea>
+
+            <label><i data-lucide="paperclip"></i> Attachment</label>
+            <input type="file" name="attachment" accept="image/*,application/pdf">
+
+            <label><i data-lucide="user"></i> Assign To</label>
+            <select name="assigned_to">
+                <option value="">Unassigned</option>
+                {% for user in users %}
+                    <option value="{{ user.id }}">{{ user.username }}</option>
+                {% endfor %}
+            </select>
+
+            <label><i data-lucide="flag"></i> Status</label>
+            <select name="status" required>
+                <option value="pending">Pending</option>
+                <option value="in progress">In Progress</option>
+                <option value="completed">Completed</option>
+                <option value="hold">Hold</option>
+            </select>
+
+            <div class="form-actions">
+                <button type="submit"><i data-lucide="plus"></i> Add Task</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="tasks-list">
+        <div class="tasks-header">
+            <h3><i data-lucide="check-square"></i> Tasks</h3>
+            <span class="task-count">{{ tasks|length if tasks else 0 }}</span>
+        </div>
+        
+        {% if tasks %}
+            {% for task in tasks %}
+                <article class="task-card">
+                    <div class="task-card-header">
+                        <h4>{{ task.task_name }}</h4>
+                        <span class="status-badge {{ task.status | lower | replace(' ', '-') }}">{{ task.status | title }}</span>
+                    </div>
+                    <div class="task-meta">
+                        <span><i data-lucide="user"></i> {{ task.assigned_name }}</span>
+                        <span><i data-lucide="calendar"></i> {{ task.created_at[:10] if task.created_at else 'N/A' }}</span>
+                    </div>
+                    <p class="task-desc">{{ task.task_description | replace('\n', '<br>') | safe }}</p>
+                    {% if task.task_details_clean %}
+                        <p class="task-extra-details">{{ task.task_details_clean | replace('\n', '<br>') | safe }}</p>
+                    {% endif %}
+                    {% if task.progress_updates %}
+                        <details class="progress-log">
+                            <summary><i data-lucide="activity"></i> Progress ({{ task.progress_updates|length }})</summary>
+                            {% for update in task.progress_updates %}
+                                <div class="progress-item">
+                                    <p>{{ update.message }}</p>
+                                    <small>{{ update.author }} · {{ update.timestamp }}</small>
+                                </div>
+                            {% endfor %}
+                        </details>
+                    {% endif %}
+                    <div class="task-card-actions">
+                        {% if task.attachment %}
+                            <a class="action-link" href="{{ url_for('static', filename=task.attachment) }}" target="_blank">
+                                <i data-lucide="paperclip"></i> Attachment
+                            </a>
+                        {% endif %}
+                        <a class="action-link" href="{{ url_for('tasks.new_subtask', parent_id=task.id) }}">
+                            <i data-lucide="git-branch"></i> Subtask
+                        </a>
+                    </div>
+                    <form method="POST" action="{{ url_for('tasks.add_task_update', task_id=task.id) }}" class="progress-form">
+                        <input type="hidden" name="next" value="{{ request.path }}">
+                        <input type="text" name="progress_comment" placeholder="Add update..." required>
+                        <button type="submit"><i data-lucide="send"></i></button>
+                    </form>
+                </article>
+            {% endfor %}
+        {% else %}
+            <div class="empty-state">
+                <i data-lucide="inbox"></i>
+                <p>No tasks yet</p>
+                <small>Create your first task using the form</small>
+            </div>
+        {% endif %}
+    </div>
 </div>
+
+<script>
+if(typeof lucide !== 'undefined') lucide.createIcons();
+</script>
 {% endblock %}

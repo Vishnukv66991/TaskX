@@ -1,0 +1,257 @@
+{% extends 'base.html' %}
+
+{% block title %}Tasks - TaskX{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='tasks.css') }}">
+<style>
+    .view-toggle {
+        display: flex;
+        gap: 8px;
+        background: var(--bg-surface);
+        padding: 4px;
+        border-radius: 10px;
+        border: 1px solid var(--border-color);
+    }
+    .view-toggle button {
+        background: transparent;
+        border: none;
+        color: var(--text-secondary);
+        padding: 8px 14px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 500;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .view-toggle button.active {
+        background: var(--accent-color);
+        color: #fff;
+    }
+    .view-toggle button:hover:not(.active) {
+        color: var(--text-primary);
+    }
+</style>
+{% endblock %}
+
+{% macro render_task(task, depth=0) %}
+<article class="task-card" style="--depth: {{ depth }}">
+    <div class="task-card-inner">
+        <div class="task-priority priority-{{ task.priority or 'medium' }}"></div>
+        
+        <div class="task-header">
+            <div class="task-title-row">
+                <h3>{{ task.task_name }}</h3>
+                {% if task.priority and task.priority != 'medium' %}
+                <span class="priority-badge priority-{{ task.priority }}">{{ task.priority }}</span>
+                {% endif %}
+            </div>
+            <span class="status status-{{ (task.status or 'pending')|lower|replace(' ', '-') }}">{{ task.status or "pending" }}</span>
+        </div>
+
+        <p class="desc">{{ task.task_description or "No description" }}</p>
+
+        {% if task.task_details_clean %}
+        <p class="details"><i data-lucide="info" class="icon-sm"></i> {{ task.task_details_clean }}</p>
+        {% endif %}
+
+        <div class="task-meta">
+            <span class="meta-item"><i data-lucide="user" class="icon-sm"></i> {{ task.assigned_name }}</span>
+            <span class="meta-item"><i data-lucide="calendar" class="icon-sm"></i> {{ task.created_at[:10] if task.created_at else "N/A" }}</span>
+            {% if task.due_date %}
+            <span class="meta-item due-{{ task.due_status or 'pending' }}"><i data-lucide="clock" class="icon-sm"></i> Due: {{ task.due_date[:10] }}</span>
+            {% endif %}
+        </div>
+
+        {% if task.progress_updates %}
+        <details class="progress-log" {% if depth == 0 %}open{% endif %}>
+            <summary><i data-lucide="activity" class="icon-sm"></i> Progress ({{ task.progress_updates|length }})</summary>
+            {% for update in task.progress_updates %}
+            <div class="progress-item">
+                <p>{{ update.message }}</p>
+                <small>{{ update.author }} · {{ update.timestamp }}</small>
+            </div>
+            {% endfor %}
+        </details>
+        {% endif %}
+
+        <div class="task-actions">
+            <div class="action-group">
+                <a href="{{ url_for('tasks.new_subtask', parent_id=task.id) }}" class="action-btn">
+                    <i data-lucide="plus-circle" class="icon-sm"></i> Subtask
+                </a>
+                {% if task.subtasks %}
+                <span class="subtask-count"><i data-lucide="git-branch" class="icon-sm"></i> {{ task.subtasks|length }}</span>
+                {% endif %}
+            </div>
+            <div class="task-dropdown">
+                <button class="dropdown-toggle" onclick="toggleDropdown(this)">
+                    <i data-lucide="more-horizontal" class="icon-sm"></i>
+                </button>
+                <div class="dropdown-menu">
+                    <a href="#" onclick="event.preventDefault(); document.getElementById('update-form-{{ task.id }}').classList.toggle('hidden')">
+                        <i data-lucide="message-square" class="icon-sm"></i> Update
+                    </a>
+                    <a href="#"><i data-lucide="edit-2" class="icon-sm"></i> Edit</a>
+                    <a href="#" class="danger"><i data-lucide="trash-2" class="icon-sm"></i> Delete</a>
+                </div>
+            </div>
+        </div>
+
+        <form method="POST" action="{{ url_for('tasks.add_task_update', task_id=task.id) }}" class="progress-form hidden" id="update-form-{{ task.id }}">
+            <input type="hidden" name="next" value="{{ request.full_path if request.full_path else request.path }}">
+            <input type="text" name="progress_comment" placeholder="Add progress update..." required>
+            <button type="submit">Post</button>
+        </form>
+
+        {% if task.attachment %}
+        <a href="{{ url_for('static', filename=task.attachment) }}" target="_blank" class="attachment">
+            <i data-lucide="paperclip" class="icon-sm"></i> Attachment
+        </a>
+        {% endif %}
+
+        {% if task.subtasks %}
+        <details class="subtasks" {% if depth < 2 %}open{% endif %}>
+            <summary>
+                <i data-lucide="chevron-down" class="icon-sm"></i> 
+                {{ task.subtasks|length }} subtask{{ 's' if task.subtasks|length > 1 else '' }}
+            </summary>
+            <div class="subtask-tree">
+                {% for sub in task.subtasks %}
+                    {{ render_task(sub, depth + 1) }}
+                {% endfor %}
+            </div>
+        </details>
+        {% endif %}
+    </div>
+</article>
+{% endmacro %}
+
+{% block content %}
+<section class="tasks-header">
+    <div>
+        <h2><i data-lucide="check-square" class="icon-lg"></i> All Tasks</h2>
+        <p>Manage and track your project tasks</p>
+    </div>
+    
+    <div class="header-right">
+        <div class="summary-grid">
+            <div class="summary-card"><span>Total</span><strong>{{ summary.total }}</strong></div>
+            <div class="summary-card pending"><span>Pending</span><strong>{{ summary.pending }}</strong></div>
+            <div class="summary-card progress"><span>In Progress</span><strong>{{ summary.in_progress }}</strong></div>
+            <div class="summary-card complete"><span>Done</span><strong>{{ summary.complete }}</strong></div>
+        </div>
+        
+        <div class="view-toggle">
+            <button class="active" onclick="setView('list')"><i data-lucide="list"></i> List</button>
+            <button onclick="setView('kanban')"><i data-lucide="layout-grid"></i> Board</button>
+        </div>
+    </div>
+</section>
+
+<form method="GET" class="filter-bar">
+    <div class="filter-search">
+        <i data-lucide="search" class="icon-sm"></i>
+        <input type="text" name="q" placeholder="Search tasks..." value="{{ query }}">
+    </div>
+    <select name="status">
+        <option value="all" {% if selected_status == 'all' %}selected{% endif %}>All status</option>
+        <option value="pending" {% if selected_status == 'pending' %}selected{% endif %}>Pending</option>
+        <option value="in progress" {% if selected_status == 'in progress' %}selected{% endif %}>In Progress</option>
+        <option value="completed" {% if selected_status == 'completed' %}selected{% endif %}>Completed</option>
+        <option value="hold" {% if selected_status == 'hold' %}selected{% endif %}>Hold</option>
+    </select>
+    <select name="assignee">
+        <option value="all" {% if selected_assignee == 'all' %}selected{% endif %}>All assignees</option>
+        {% for user in users %}
+        <option value="{{ user.id }}" {% if selected_assignee == user.id|string %}selected{% endif %}>{{ user.username }}</option>
+        {% endfor %}
+    </select>
+    <button type="submit"><i data-lucide="filter" class="icon-sm"></i> Filter</button>
+</form>
+
+<div id="list-view" class="task-container">
+    {% if tasks %}
+        {% for task in tasks %}
+            {{ render_task(task) }}
+        {% endfor %}
+    {% else %}
+        <div class="empty-state">
+            <i data-lucide="inbox" class="icon-empty"></i>
+            <p>No tasks found</p>
+            <small>Try adjusting your filters</small>
+        </div>
+    {% endif %}
+</div>
+
+<div id="kanban-view" class="kanban-container hidden">
+    <div class="kanban-column">
+        <div class="kanban-header pending">
+            <span>Pending</span>
+            <span class="kanban-count">{{ summary.pending }}</span>
+        </div>
+        <div class="kanban-body">
+            {% for task in tasks if (task.status or 'pending')|lower == 'pending' %}
+                {{ render_task(task) }}
+            {% endfor %}
+        </div>
+    </div>
+    <div class="kanban-column">
+        <div class="kanban-header progress">
+            <span>In Progress</span>
+            <span class="kanban-count">{{ summary.in_progress }}</span>
+        </div>
+        <div class="kanban-body">
+            {% for task in tasks if (task.status or 'pending')|lower == 'in progress' %}
+                {{ render_task(task) }}
+            {% endfor %}
+        </div>
+    </div>
+    <div class="kanban-column">
+        <div class="kanban-header complete">
+            <span>Completed</span>
+            <span class="kanban-count">{{ summary.complete }}</span>
+        </div>
+        <div class="kanban-body">
+            {% for task in tasks if (task.status or 'pending')|lower in ['completed', 'complete'] %}
+                {{ render_task(task) }}
+            {% endfor %}
+        </div>
+    </div>
+    <div class="kanban-column">
+        <div class="kanban-header hold">
+            <span>On Hold</span>
+            <span class="kanban-count">{{ summary.hold }}</span>
+        </div>
+        <div class="kanban-body">
+            {% for task in tasks if (task.status or 'pending')|lower == 'hold' %}
+                {{ render_task(task) }}
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<script>
+function setView(view) {
+    document.getElementById('list-view').classList.toggle('hidden', view !== 'list');
+    document.getElementById('kanban-view').classList.toggle('hidden', view !== 'kanban');
+    document.querySelectorAll('.view-toggle button').forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+    if(typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+function toggleDropdown(btn) {
+    btn.closest('.task-dropdown').querySelector('.dropdown-menu').classList.toggle('show');
+}
+
+document.addEventListener('click', function(e) {
+    if (!e.target.closest('.task-dropdown')) {
+        document.querySelectorAll('.dropdown-menu.show').forEach(m => m.classList.remove('show'));
+    }
+});
+</script>
+
+{% endblock %}

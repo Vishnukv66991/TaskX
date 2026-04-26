@@ -4,7 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TaskX - Initializing System...</title>
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.svg') }}">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='global.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='splash.css') }}">
     
@@ -15,10 +18,10 @@
         }, 3800);
     </script>
 </head>
-<body class="light-mode">
+<body>
     
     <div class="splash-container">
-        <div class="splash-logo">▲</div>
+        <div class="splash-logo"><i data-lucide="rocket"></i></div>
         <div class="splash-text">System Init</div>
         <div class="splash-sub">Booting Environments</div>
         
@@ -27,5 +30,6 @@
 
     <!-- Theme init before redirect so it matches global preference -->
     <script src="{{ url_for('static', filename='theme.js') }}"></script>
+    <script>lucide.createIcons();</script>
 </body>
 </html>

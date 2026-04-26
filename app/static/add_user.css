@@ -1,40 +1,122 @@
+
+/* ===== FORM CARD CONTAINER ===== */
 .form-card {
+    max-width: 500px;
+    margin: 60px auto;
     background: var(--bg-surface);
-    padding: 35px;
-    border-radius: 16px;
-    max-width: 450px;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 24px;
+    padding: 40px;
     border: 1px solid var(--border-color);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
 }
 
 .form-card h2 {
+    font-size: 24px;
+    font-weight: 800;
+    margin-bottom: 30px;
+    text-align: center;
     color: var(--text-primary);
-    margin-bottom: 25px;
-    font-size: 22px;
+    letter-spacing: -0.02em;
 }
 
+.title-with-icon {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.title-with-icon i {
+    width: 20px;
+    height: 20px;
+    color: var(--accent-color);
+}
+
+/* ===== FORM ELEMENTS ===== */
 .form-card label {
-    font-size: 13px;
-    color: var(--text-secondary);
-    margin-top: 15px;
     display: block;
+    font-size: 12px;
+    font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 1px;
+    letter-spacing: 1.2px;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
 }
 
-.form-card select {
-    width: 100%;
-    background-color: var(--bg-main);
+/* Glass Input Styling */
+.glass-input {
+    background: var(--bg-main) !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: 12px !important;
+    padding: 14px 16px !important;
+    color: var(--text-primary) !important;
+    font-size: 15px !important;
+    outline: none !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-sizing: border-box;
+}
+
+.glass-input:focus {
+    border-color: #3b82f6 !important;
+    background: var(--bg-main) !important;
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
+}
+
+/* Dropdown specific styling */
+select.glass-input {
+    cursor: pointer;
+    appearance: none; /* Removes default arrow */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%239ca3af'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 16px center;
+    background-size: 18px;
+}
+
+select.glass-input option {
+    background: var(--bg-surface);
     color: var(--text-primary);
-    border: 1px solid var(--border-color);
-    padding: 12px 16px;
-    border-radius: 8px;
-    outline: none;
-    transition: 0.2s;
-    margin-top: 8px;
-    margin-bottom: 20px;
 }
 
-.form-card select:focus {
-    border-color: var(--accent-green);
+/* ===== PRIMARY BUTTON ===== */
+.btn-primary {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 16px;
+    padding: 16px;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 10px 20px -5px rgba(37, 99, 235, 0.4);
+    margin-top: 10px;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 15px 30px -5px rgba(37, 99, 235, 0.5);
+    filter: brightness(1.1);
+}
+
+.btn-primary:active {
+    transform: translateY(0);
+}
+
+/* ===== CANCEL LINK ===== */
+.form-card a {
+    transition: color 0.2s;
+    display: inline-block;
+}
+
+.form-card a:hover {
+    color: var(--text-primary) !important;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+    .form-card {
+        margin: 20px;
+        padding: 24px;
+    }
 }

@@ -1,4 +1,5 @@
 import os
+import uuid
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session, current_app
 from werkzeug.utils import secure_filename
 from app.utils.db import supabase
@@ -7,9 +8,51 @@ from app.utils.decorators import login_required
 spaces_bp = Blueprint('spaces', __name__)
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'pdf'}
+UPDATE_MARKER = "[PROGRESS_UPDATE]"
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+def normalize_status(raw_status):
+    status = (raw_status or "pending").strip().lower()
+    return "completed" if status == "complete" else status
+
+
+def split_task_details_and_updates(task):
+    raw_details = (task.get("task_details") or "").strip()
+    if not raw_details:
+        task["task_details_clean"] = None
+        task["progress_updates"] = []
+        return
+
+    clean_lines = []
+    updates = []
+    for line in raw_details.splitlines():
+        line = line.strip()
+        if line.startswith(f"{UPDATE_MARKER}|"):
+            parts = line.split("|", 3)
+            if len(parts) == 4:
+                _, ts, author, message = parts
+                updates.append(
+                    {
+                        "timestamp": ts,
+                        "author": author or "Unknown",
+                        "message": message.strip(),
+                    }
+                )
+        else:
+            clean_lines.append(line)
+
+    task["task_details_clean"] = "\n".join([l for l in clean_lines if l]).strip() or None
+    task["progress_updates"] = updates
+
+
+def _ensure_admin_access():
+    if session.get("role") != "admin":
+        flash("Only admins can access spaces.", "danger")
+        return False
+    return True
 
 # =========================
 # CREATE SPACE
@@ -17,6 +60,9 @@ def allowed_file(filename):
 @spaces_bp.route('/create-space', methods=['GET', 'POST'])
 @login_required
 def create_space():
+    if not _ensure_admin_access():
+        return redirect(url_for('main.dashboard'))
+
     if request.method == 'POST':
         name = request.form.get('name')
         description = request.form.get('description')
@@ -51,6 +97,9 @@ def create_space():
 @spaces_bp.route('/spaces')
 @login_required
 def list_spaces():
+    if not _ensure_admin_access():
+        return redirect(url_for('main.dashboard'))
+
     try:
         res = supabase.table("spaces").select("*").order("id", desc=True).execute()
         spaces = res.data if res.data else []
@@ -77,6 +126,8 @@ def list_spaces():
 @spaces_bp.route('/space/<int:space_id>', methods=['GET', 'POST'])
 @login_required
 def space_detail(space_id):
+    if not _ensure_admin_access():
+        return redirect(url_for('main.dashboard'))
 
     # CREATE TASK
     if request.method == 'POST':
@@ -85,7 +136,7 @@ def space_detail(space_id):
         task_details = request.form.get('task_details')
         attachment_file = request.files.get('attachment')
         assigned_to = request.form.get('assigned_to')
-        status = request.form.get('status') or 'pending'
+        status = normalize_status(request.form.get('status'))
 
         if not task_name or not task_description:
             flash("Task name and description are required.", "danger")
@@ -100,22 +151,20 @@ def space_detail(space_id):
             if allowed_file(filename):
                 upload_folder = os.path.join(current_app.root_path, 'static', 'uploads')
                 os.makedirs(upload_folder, exist_ok=True)
-                saved_path = os.path.join(upload_folder, filename)
+                unique_filename = f"{uuid.uuid4().hex}_{filename}"
+                saved_path = os.path.join(upload_folder, unique_filename)
                 attachment_file.save(saved_path)
-                attachment_path = f'uploads/{filename}'
+                attachment_path = f'uploads/{unique_filename}'
             else:
                 flash('Allowed file types: png, jpg, jpeg, gif, pdf', 'danger')
                 return redirect(url_for('spaces.space_detail', space_id=space_id))
 
-        description_full = task_description.strip()
-        if task_details and task_details.strip():
-            description_full += '\n\nDetails:\n' + task_details.strip()
-
         try:
             supabase.table("tasks").insert({
                 "space_id": space_id,
-                "task_name": task_name,
-                "task_description": description_full,
+                "task_name": task_name.strip(),
+                "task_description": task_description.strip(),
+                "task_details": (task_details or "").strip() or None,
                 "attachment": attachment_path,
                 "assigned_to": assigned_to,
                 "status": status
@@ -157,6 +206,7 @@ def space_detail(space_id):
 
     for t in tasks:
         t["assigned_name"] = user_map.get(t.get("assigned_to"), "Unassigned")
+        split_task_details_and_updates(t)
 
     return render_template(
         "space_detail.html",

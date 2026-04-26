@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, session
+from flask import Blueprint, jsonify, render_template, request, redirect, url_for, flash, session
 from app.utils.db import supabase
 from app.utils.decorators import login_required
 
@@ -17,6 +17,21 @@ def chat():
         users = []
         flash("Failed to load user list.", "danger")
 
+    unread_by_user = {}
+    try:
+        unread_rows = (
+            supabase.table("messages")
+            .select("sender_id", count="exact")
+            .eq("receiver_id", current_user)
+            .eq("is_read", False)
+            .execute()
+        )
+        for row in (unread_rows.data or []):
+            sender_id = row.get("sender_id")
+            unread_by_user[sender_id] = unread_by_user.get(sender_id, 0) + 1
+    except Exception:
+        unread_by_user = {}
+
     messages = []
     if selected_user:
         try:
@@ -25,6 +40,14 @@ def chat():
                 f"and(sender_id.eq.{selected_user},receiver_id.eq.{current_user})"
             ).order("created_at").execute()
             messages = msg_res.data if msg_res.data else []
+            try:
+                supabase.table("messages").update({"is_read": True}) \
+                    .eq("sender_id", selected_user) \
+                    .eq("receiver_id", current_user) \
+                    .eq("is_read", False) \
+                    .execute()
+            except Exception:
+                pass
         except Exception as e:
             flash("Failed to load messages.", "danger")
 
@@ -32,7 +55,8 @@ def chat():
         "chat_users.html",
         users=users,
         messages=messages,
-        selected_user=selected_user
+        selected_user=selected_user,
+        unread_by_user=unread_by_user,
     )
 
 
@@ -61,3 +85,26 @@ def send_message():
         flash("Failed to send message", "danger")
 
     return redirect(url_for('chat.chat', user=receiver))
+
+
+@chat_bp.route('/api/chat/unread')
+@login_required
+def unread_counts():
+    current_user = session['user_id']
+    try:
+        rows = (
+            supabase.table("messages")
+            .select("sender_id")
+            .eq("receiver_id", current_user)
+            .eq("is_read", False)
+            .execute()
+        ).data or []
+    except Exception:
+        rows = []
+
+    counts = {}
+    for row in rows:
+        sender = row.get("sender_id")
+        counts[str(sender)] = counts.get(str(sender), 0) + 1
+
+    return jsonify({"counts": counts})

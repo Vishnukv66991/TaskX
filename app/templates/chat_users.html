@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% block title %}Comms Link{% endblock %}
+{% block title %}Chat - TaskX{% endblock %}
 
 {% block head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='chat.css') }}">
@@ -7,59 +7,101 @@
 
 {% block content %}
 <div class="chat-container">
-    
-    <!-- User List Inner Sidebar -->
     <div class="chat-sidebar">
-        <h3>Users</h3>
+        <div class="sidebar-header">
+            <h3><i data-lucide="message-circle"></i> Conversations</h3>
+        </div>
         <div class="user-list">
             {% for u in users %}
             <a href="{{ url_for('chat.chat', user=u.id) }}" class="user-item {% if selected_user|string == u.id|string %}active{% endif %}">
                 <div class="user-avatar">{{ u.username[0] | upper }}</div>
-                <div>{{ u.username }}</div>
+                <div class="user-info">
+                    <div class="user-name">{{ u.username }}</div>
+                    <small>Click to chat</small>
+                </div>
+                {% set unread = unread_by_user.get(u.id, 0) %}
+                {% if unread > 0 %}
+                <span class="unread-badge">{{ unread }}</span>
+                {% endif %}
             </a>
+            {% else %}
+            <div class="empty-users">
+                <i data-lucide="users"></i>
+                <p>No users available</p>
+            </div>
             {% endfor %}
         </div>
     </div>
 
-    <!-- Active Chat Pane -->
     <div class="chat-area">
         {% if selected_user %}
             <div class="chat-header">
-                Chat Active
+                <div class="chat-user-info">
+                    <div class="user-avatar small">
+                        {% for u in users if u.id|string == selected_user|string %}{{ u.username[0] | upper }}{% endfor %}
+                    </div>
+                    <div>
+                        <h4>{% for u in users if u.id|string == selected_user|string %}{{ u.username }}{% endfor %}</h4>
+                        <small>Online</small>
+                    </div>
+                </div>
             </div>
             
-            <div class="messages">
+            <div class="messages" id="messages">
                 {% for msg in messages %}
                     {% if msg.sender_id|string == session['user_id']|string %}
-                        <div class="msg-bubble msg-sent">
-                            {{ msg.message }}
-                            <span class="msg-time">{{ msg.created_at[:16] }}</span>
+                        <div class="msg-wrapper msg-sent">
+                            <div class="msg-bubble">
+                                {{ msg.message }}
+                                <span class="msg-time">{{ msg.created_at[:16] }}</span>
+                            </div>
                         </div>
                     {% else %}
-                        <div class="msg-bubble msg-recv">
-                            {{ msg.message }}
-                            <span class="msg-time">{{ msg.created_at[:16] }}</span>
+                        <div class="msg-wrapper msg-recv">
+                            <div class="msg-bubble">
+                                {{ msg.message }}
+                                <span class="msg-time">{{ msg.created_at[:16] }}</span>
+                            </div>
                         </div>
                     {% endif %}
                 {% else %}
-                    <div class="empty-chat">Select a user to start messaging.</div>
+                    <div class="empty-messages">
+                        <i data-lucide="message-circle"></i>
+                        <p>Start a conversation</p>
+                    </div>
                 {% endfor %}
             </div>
 
-            <!-- Input bar -->
             <form action="/send-message" method="POST" class="chat-input-area">
                 <input type="hidden" name="receiver_id" value="{{ selected_user }}">
-                <input type="text" name="message" placeholder="Type a message..." required autocomplete="off">
-                <button type="submit" class="btn-primary" style="padding: 10px 24px; border-radius: 24px;">Send</button>
+                <div class="input-wrapper">
+                    <i data-lucide="message-square"></i>
+                    <input type="text" name="message" placeholder="Type a message..." required autocomplete="off">
+                </div>
+                <button type="submit" class="send-btn">
+                    <i data-lucide="send"></i>
+                </button>
             </form>
-            
         {% else %}
-            <div class="empty-chat" style="flex-direction:column; gap:15px;">
-                <div style="font-size:40px;">💬</div>
-                Select a user to chat.
+            <div class="empty-chat">
+                <div class="empty-icon">
+                    <i data-lucide="message-circle"></i>
+                </div>
+                <h3>Select a conversation</h3>
+                <p>Choose a user from the sidebar to start messaging</p>
             </div>
         {% endif %}
     </div>
-
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var messagesDiv = document.getElementById('messages');
+    if (messagesDiv) {
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+});
+
+if(typeof lucide !== 'undefined') lucide.createIcons();
+</script>
 {% endblock %}
